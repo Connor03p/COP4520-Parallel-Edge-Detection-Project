@@ -1,11 +1,15 @@
 #!/bin/bash
 
 
-echo "Container Up and Running"
-
 # TODO: will have to switch users manually
 # switch user to non root user created in dockerfile
 # su dev
+
+
+echo "Container Up and Running"
+
+# Do this to check and verify installation
+dpkg -l libopencv-dev
 
 # keeps the container open and running with no server
 tail -f /dev/null

@@ -8,7 +8,7 @@ services:
       - 80:80
     volumes:
       # binds everything in the root dir to the src dir in the container
-      - ./:/src
+      - .:/src/
       # used for vscode settings persistant data
       - vscodeServerData:/.vscod-server
 
