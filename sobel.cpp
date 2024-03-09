@@ -11,6 +11,7 @@ void sobelEdgeDetection(const std::vector<std::vector<int>> &image, std::vector<
 {
     int numRows = image.size();
     int numCols = image[0].size();
+    int magnitude, threshold = 255;
 
     // Apply Sobel operator to each pixel in the image
     for (int i = 1; i < numRows - 1; ++i)
@@ -30,7 +31,17 @@ void sobelEdgeDetection(const std::vector<std::vector<int>> &image, std::vector<
             }
 
             // Compute gradient magnitude
-            edgeImage[i][j] = std::sqrt(gx * gx + gy * gy);
+            magnitude = std::sqrt(gx * gx + gy * gy);
+
+            // threshold
+            if (magnitude > threshold)
+            {
+                edgeImage[i][j] = magnitude;
+            }
+            else
+            {
+                edgeImage[i][j] = 0;
+            }
         }
     }
 }
