@@ -8,6 +8,7 @@ RUN apt update && apt install -y cmake g++ wget unzip
 
 # install gcc/g++
 RUN apt install build-essential gdb -y
+RUN apt install sudo -y
 
 # install opencv
 # Reason why We can't just apt install libopencv-dev --> https://stackoverflow.com/questions/44331836/apt-get-install-tzdata-noninteractive
@@ -18,9 +19,6 @@ RUN DEBIAN_FRONTEND="noninteractive" apt install -y libopencv-dev
 # make source dir
 RUN mkdir /src
 WORKDIR /src/
-
-# TODO: need to install opencv
-# TODO install other things needed as well
 
 # copy the entrypoint script to src in container
 WORKDIR /src

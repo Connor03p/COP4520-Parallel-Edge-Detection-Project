@@ -8,7 +8,6 @@ using namespace std;
 
 int main()
 {
-    cout << "fuck\n";
     Mat image = cv::imread("/src/sample.png");
     if (image.empty())
     {

@@ -5,7 +5,6 @@
 # switch user to non root user created in dockerfile
 # su dev
 
-
 echo "Container Up and Running"
 
 # Do this to check and verify installation
