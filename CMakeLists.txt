@@ -21,8 +21,13 @@ message(STATUS "    version: ${OpenCV_VERSION}")
 message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
+include_directories(headers)
+
 # Declare the executable target built from your sources
-add_executable(opencv_test test.cpp)
+add_executable(opencv_test test.cpp src_files/convolution.cpp)
+
+target_include_directories(opencv_test PRIVATE ${headers_dir})
+
 
 # Link your application with OpenCV libraries
-target_link_libraries(opencv_test PRIVATE ${OpenCV_LIBS})
+target_link_libraries(opencv_test ${OpenCV_LIBS})
