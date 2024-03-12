@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/src/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/opencv4 -g -o CMakeFiles/opencv_test.dir/test.cpp.o -c /src/test.cpp",
-  "file": "/src/test.cpp"
-}
-]

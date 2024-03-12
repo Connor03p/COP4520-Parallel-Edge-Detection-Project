@@ -1,3 +1,0 @@
-/src/build/CMakeFiles/opencv_test.dir
-/src/build/CMakeFiles/edit_cache.dir
-/src/build/CMakeFiles/rebuild_cache.dir
