@@ -85,6 +85,8 @@ Mat threshold(const Mat &image, int minValue, int maxValue)
 int main()
 {
     Mat image = cv::imread("/src/sample.png");
+    String output_path = "/src/output.png";
+
     if (image.empty())
     {
         cout << "Failed to load image" << endl;
@@ -95,8 +97,9 @@ int main()
     Mat edgeImage = sobelEdgeDetection(grayImage);
     Mat thresholdedImage = threshold(edgeImage, 90, 255);
 
-    cv::imwrite("/src/output.png", thresholdedImage);
-    cout << "Image saved to '" << "output.png" << "'" << endl;
+    
+    cv::imwrite(output_path, thresholdedImage);
+    cout << "Image saved to '" << output_path << "'" << endl;
     
     convolution conv;
 
