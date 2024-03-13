@@ -15,7 +15,6 @@ int y_kernal[3][3] = {{1, 2, 1},
                       {0, 0, 0}, 
                       {-1, -2, -1}};
 
-
 Mat grayscale(const Mat &image)
 {
     int numRows = image.rows;
@@ -66,6 +65,23 @@ Mat sobelEdgeDetection(const Mat &image)
     return edgeImage;
 }
 
+Mat threshold(const Mat &image, int minValue, int maxValue)
+{
+    int numRows = image.rows;
+    int numCols = image.cols;
+    Mat thresholdedImage = Mat::zeros(numRows, numCols, CV_8UC1);
+
+    for (int i = 0; i < numRows; ++i)
+    {
+        for (int j = 0; j < numCols; ++j)
+        {
+            thresholdedImage.at<uchar>(i, j) = (image.at<uchar>(i, j) > minValue) ? 255 : 0;
+        }
+    }
+
+    return thresholdedImage;
+}
+
 int main()
 {
     Mat image = cv::imread("/src/sample.png");
@@ -77,8 +93,9 @@ int main()
 
     Mat grayImage = grayscale(image);
     Mat edgeImage = sobelEdgeDetection(grayImage);
+    Mat thresholdedImage = threshold(edgeImage, 90, 255);
 
-    cv::imwrite("/src/output.png", edgeImage);
+    cv::imwrite("/src/output.png", thresholdedImage);
     cout << "Image saved to '" << "output.png" << "'" << endl;
     
     convolution conv;
