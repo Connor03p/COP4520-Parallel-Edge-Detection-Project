@@ -9,6 +9,9 @@ RUN apt update && apt install -y cmake g++ wget unzip
 # install gcc/g++
 RUN apt install build-essential gdb -y
 
+# install sudo
+RUN apt install sudo -y
+
 # install opencv
 # Reason why We can't just apt install libopencv-dev --> https://stackoverflow.com/questions/44331836/apt-get-install-tzdata-noninteractive
 RUN echo 'libopencv-dev libopencv-dev/Areas select Europe' | debconf-set-selections
