@@ -22,9 +22,10 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 include_directories(headers)
+include_directories(src_files)
 
 # Declare the executable target built from your sources
-add_executable(opencv_test test.cpp src_files/convolution.cpp)
+add_executable(opencv_test main.cpp)
 
 target_include_directories(opencv_test PRIVATE ${headers_dir})
 
