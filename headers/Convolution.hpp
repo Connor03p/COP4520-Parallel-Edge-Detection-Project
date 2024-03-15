@@ -41,7 +41,7 @@ private:
      * @param y the y index of the center pixel of some 3x3 you want to grab
      * @return The resulting 1D vector. If x || y are not in bounds of the un padded image then zero vector is returned
      */
-    std::vector<int> formVectorOutOf3by3(cv::Mat &image, int x, int y);
+    std::vector<uchar> formVectorOutOf3by3(cv::Mat &image, int x, int y);
 
     /**
      * Both kernals are pre flatten to vectors to save on computation

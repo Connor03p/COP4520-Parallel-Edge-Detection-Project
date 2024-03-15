@@ -20,19 +20,19 @@ int Convolution::calcConvolution(std::vector<int> vector1, std::vector<int> vect
     return convolution;
 }
 
-std::vector<int> Convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y)
+std::vector<uchar> Convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y)
 {
-    std::vector<int> retval;
+    std::vector<uchar> retval;
     int i, j;
 
     // this is to make sure that the indicies passed in are over the original image and not the add padding
     // we cam still collect those values with the following algorithm, we just don't want to
     // center the pixel anywhere in the padding.
-    if (x < 1 || x > 255 || y < 1 || y > 255)
-    {
-        std::cout << "X or Y index out of bounds of un padded image" << std::endl;
-        return retval;
-    }
+    // if (x < 1 || x > 256 || y < 1 || y > 256)
+    // {
+    //     std::cout << "X or Y index out of bounds of un padded image" << std::endl;
+    //     return retval;
+    // }
 
     // reserve space in memory for 9 values, faster than adding values only with push back
     retval.reserve(9);
@@ -55,7 +55,7 @@ std::vector<int> Convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y)
 
         // TODO: print statement for debugging
         // std::cout << int(image.at<char>(x + i, y + j)) << " ";
-        retval.push_back(int(image.at<char>(x + i, y + j)));
+        retval.push_back(image.at<uchar>(x + i, y + j));
         j++;
     }
 
@@ -65,14 +65,16 @@ std::vector<int> Convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y)
 int Convolution::performConvolutionOnPatch(cv::Mat &image, int x, int y)
 {
     // this is called patch for consistent reasons, but values are contained within a vector
-    std::vector<int> patch;
+    std::vector<uchar> patch;
     int gx_patch, gy_patch, magnitude_patch;
 
     patch = formVectorOutOf3by3(image, x, y);
 
+    std::vector<int> patch_int(patch.begin(), patch.end());
+
     // the change in x and y are also just the patches and not the entire gx and gy
-    gx_patch = calcConvolution(patch, Convolution::x_kernal_vector);
-    gy_patch = calcConvolution(patch, Convolution::y_kernal_vector);
+    gx_patch = calcConvolution(patch_int, Convolution::x_kernal_vector);
+    gy_patch = calcConvolution(patch_int, Convolution::y_kernal_vector);
 
     // now we find the patches magnitude
     magnitude_patch = std::sqrt((gx_patch * gx_patch) + (gy_patch * gy_patch));
