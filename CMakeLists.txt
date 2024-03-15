@@ -25,7 +25,7 @@ include_directories(headers)
 include_directories(src_files)
 
 # Declare the executable target built from your sources
-add_executable(opencv_test main.cpp src_files/localUtil.cpp src_files/convolution.cpp)
+add_executable(opencv_test main.cpp src_files/localUtil.cpp src_files/Convolution.cpp)
 
 
 # Link your application with OpenCV libraries

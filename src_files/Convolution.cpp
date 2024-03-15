@@ -1,6 +1,6 @@
-#include "/src/headers/convolution.hpp"
+#include "/src/headers/Convolution.hpp"
 
-int convolution::calcConvolution(std::vector<int> vector1, std::vector<int> vector2)
+int Convolution::calcConvolution(std::vector<int> vector1, std::vector<int> vector2)
 {
     int convolution = 0;
     int vector1Size = vector1.size();
@@ -20,7 +20,7 @@ int convolution::calcConvolution(std::vector<int> vector1, std::vector<int> vect
     return convolution;
 }
 
-std::vector<int> convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y)
+std::vector<int> Convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y)
 {
     std::vector<int> retval;
     int i, j;
@@ -60,4 +60,25 @@ std::vector<int> convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y)
     }
 
     return retval;
+}
+
+int Convolution::performConvolutionOnPatch(cv::Mat &image, int x, int y)
+{
+    // this is called patch for consistent reasons, but values are contained within a vector
+    std::vector<int> patch;
+    int gx_patch, gy_patch, magnitude_patch;
+
+    patch = formVectorOutOf3by3(image, x, y);
+
+    // the change in x and y are also just the patches and not the entire gx and gy
+    gx_patch = calcConvolution(patch, Convolution::x_kernal_vector);
+    gy_patch = calcConvolution(patch, Convolution::y_kernal_vector);
+
+    // now we find the patches magnitude
+    magnitude_patch = std::sqrt((gx_patch * gx_patch) + (gy_patch * gy_patch));
+
+    // TODO: should scale magnitude image before taking threshold
+    // ?Maybe do this in a wrapper function
+
+    return magnitude_patch;
 }

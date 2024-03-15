@@ -3,11 +3,25 @@
 #include <vector>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
+#include <cmath>
 
-class convolution
+class Convolution
 {
 
 public:
+    /**
+     * @brief this will take the image and the coordinates given, perform the sobel
+     * algorithm and return the magnitude for that 3x3
+     *
+     * @param image the input image that holds the pixels you want to grab
+     * @param x the x index of the center pixel of some 3x3 you want to grab
+     * @param y the y index of the center pixel of some 3x3 you want to grab
+     *
+     * @return THe magnitude of a single patch
+     */
+    int performConvolutionOnPatch(cv::Mat &image, int x, int y);
+
+private:
     /**
      * @brief Calculates the convolution of two flattened 3x3 matrices.
      *
@@ -29,7 +43,6 @@ public:
      */
     std::vector<int> formVectorOutOf3by3(cv::Mat &image, int x, int y);
 
-private:
     /**
      * Both kernals are pre flatten to vectors to save on computation
      * the vectors here are equivalent to their 3x3 matrix counter parts i.e.
@@ -39,6 +52,6 @@ private:
      *        -1  0  1        -1 -2 -1
      *
      */
-    const std::vector<int> gx_kernal_vector{1, 0, -1, 2, 0, -2, 1, 0, -1};
-    const std::vector<int> gy_kernal_vector{1, 2, 1, 0, 0, 0, -1, -2, -1};
+    const std::vector<int> x_kernal_vector{-1, 0, 1, -2, 0, 2, -1, 0, 1};
+    const std::vector<int> y_kernal_vector{1, 2, 1, 0, 0, 0, -1, -2, -1};
 };
