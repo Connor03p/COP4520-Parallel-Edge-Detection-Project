@@ -19,7 +19,7 @@ public:
      * @param  image the input image
      * @returns an image where the borders of the input image are 0's
      */
-    static Mat fillWithZeros(const Mat &image);
+    static Mat padWithZeros(const Mat &image);
 
     /**
      * Write the pixel values of an image to a *.txt file

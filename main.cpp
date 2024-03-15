@@ -13,6 +13,8 @@ int main()
     // sets the dir where we search for photos using "samples::findFile()"
     samples::addSamplesDataSearchPath("/src/input_imgs");
 
+    convolution conv;
+
     std::string inputImagePath = samples::findFile("sample_256x256.png");
     Mat inputImage = imread(inputImagePath, IMREAD_GRAYSCALE);
 
@@ -21,13 +23,12 @@ int main()
         std::cout << "Image was not loaded properly" << std::endl;
     }
 
-    Mat padded = localUtil::fillWithZeros(inputImage);
+    Mat padded = localUtil::padWithZeros(inputImage);
 
-    localUtil::writeImageToTxt(inputImage, "Regular");
-    localUtil::writeImageToTxt(padded, "padded");
+    std::vector<int> test = conv.formVectorOutOf3by3(padded, 1, 1);
 
-    imshow("Display Window", padded);
-    waitKey(0); // wait for a keystroke in the window
+    // imshow("Display Window", padded);
+    // waitKey(0); // wait for a keystroke in the window
 
     // TODO: get to the multithreading sobel part after exam
     // TODO: implement counter class and thread class

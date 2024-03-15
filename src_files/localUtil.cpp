@@ -1,6 +1,6 @@
 #include "/src/headers/localUtil.hpp"
 
-Mat localUtil::fillWithZeros(const Mat &image)
+Mat localUtil::padWithZeros(const Mat &image)
 {
     Mat padded;
     int padding = 1;
