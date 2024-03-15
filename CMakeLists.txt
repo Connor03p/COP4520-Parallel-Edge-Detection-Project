@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.1)
 # Define project name
 project(opencv_example_project)
 
-set(CMAKE_GXX_FLAGS "-Wall -Wextra -Wconversion  -pedantic -std=gnu11")
+set(CMAKE_GXX_FLAGS "-Wall -Wextra -Wconversion  -pedantic -std=c++20")
 
 # Find OpenCV, you may need to set OpenCV_DIR variable
 # to the absolute path to the directory containing OpenCVConfig.cmake file
@@ -25,9 +25,7 @@ include_directories(headers)
 include_directories(src_files)
 
 # Declare the executable target built from your sources
-add_executable(opencv_test main.cpp)
-
-target_include_directories(opencv_test PRIVATE ${headers_dir})
+add_executable(opencv_test main.cpp src_files/localUtil.cpp src_files/convolution.cpp)
 
 
 # Link your application with OpenCV libraries
