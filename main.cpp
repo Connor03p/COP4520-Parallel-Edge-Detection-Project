@@ -9,6 +9,7 @@
 using namespace cv;
 
 // TODO: remove later, this was just for testing
+// TODO: add multithreading to this tomorrow
 // Each thread will do an interation of this for loop
 // save this for reference later, won't be used in the final
 cv::Mat testWrapper(Mat &image)
