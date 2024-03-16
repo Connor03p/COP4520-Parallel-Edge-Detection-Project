@@ -19,7 +19,7 @@ public:
      *
      * @return THe magnitude of a single patch
      */
-    int performConvolutionOnPatch(cv::Mat &image, int x, int y);
+    int performSobelOnPatch(cv::Mat &image, int x, int y);
 
 private:
     /**

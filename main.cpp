@@ -9,7 +9,9 @@
 using namespace cv;
 
 // TODO: remove later, this was just for testing
-void testWrapper(Mat &image)
+// Each thread will do an interation of this for loop
+// save this for reference later, won't be used in the final
+Mat testWrapper(Mat &image)
 {
     Convolution conv;
     Mat magnitude(image.rows, image.cols, CV_8UC1);
@@ -20,39 +22,23 @@ void testWrapper(Mat &image)
     // the way i get indicies here anyway will change when multithreading since some things need
     // to be shared
 
-    for (int i = 0; i < image.rows; i++)
+    for (int i = 1; i < image.rows - 1; i++)
     {
-        for (int j = 0; j < image.cols; j++)
+        for (int j = 1; j < image.cols - 1; j++)
         {
-            uchar mag = conv.performConvolutionOnPatch(image, i, j);
+            uchar mag = conv.performSobelOnPatch(image, i, j);
             magnitude.at<uchar>(i, j) = mag;
         }
     }
 
-    localUtil::writeImageToTxt(magnitude, "magnitude");
-    imshow("display", magnitude);
-    waitKey(0);
+    return magnitude;
 }
 
 int main()
 {
-    // sets the dir where we search for photos using "samples::findFile()"
-    samples::addSamplesDataSearchPath("/src/input_imgs");
+    Mat image = localUtil::loadImageFromFile("sample.png", cv::ImreadModes::IMREAD_GRAYSCALE);
 
-    Convolution conv;
-
-    std::string inputImagePath = samples::findFile("sample_256x256.png");
-    Mat inputImage = imread(inputImagePath, IMREAD_GRAYSCALE);
-
-    if (inputImage.empty())
-    {
-        std::cout << "Image was not loaded properly" << std::endl;
-    }
-
-    Mat padded = localUtil::padWithZeros(inputImage);
-    testWrapper(padded);
-
-    // imshow("Display Window", padded);
+    imshow("Image", image);
     waitKey(0); // wait for a keystroke in the window
 
     // TODO: implement counter class and thread class

@@ -62,25 +62,25 @@ std::vector<uchar> Convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y
     return retval;
 }
 
-int Convolution::performConvolutionOnPatch(cv::Mat &image, int x, int y)
+int Convolution::performSobelOnPatch(cv::Mat &image, int x, int y)
 {
     // this is called patch for consistent reasons, but values are contained within a vector
     std::vector<uchar> patch;
-    int gx_patch, gy_patch, magnitude_patch;
+    int gxPatch, gyPatch, magnitudePatch, patchValueAfterThreshold;
 
     patch = formVectorOutOf3by3(image, x, y);
 
     std::vector<int> patch_int(patch.begin(), patch.end());
 
     // the change in x and y are also just the patches and not the entire gx and gy
-    gx_patch = calcConvolution(patch_int, Convolution::x_kernal_vector);
-    gy_patch = calcConvolution(patch_int, Convolution::y_kernal_vector);
+    gxPatch = calcConvolution(patch_int, Convolution::x_kernal_vector);
+    gyPatch = calcConvolution(patch_int, Convolution::y_kernal_vector);
 
     // now we find the patches magnitude
-    magnitude_patch = std::sqrt((gx_patch * gx_patch) + (gy_patch * gy_patch));
+    magnitudePatch = std::sqrt((gxPatch * gxPatch) + (gyPatch * gyPatch));
 
     // TODO: should scale magnitude image before taking threshold
     // ?Maybe do this in a wrapper function
 
-    return magnitude_patch;
+    return magnitudePatch;
 }
