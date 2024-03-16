@@ -80,9 +80,20 @@ Mat threshold(const Mat &image, int minValue, int maxValue)
     return thresholdedImage;
 }
 
+template <typename Func>
+double timeFunction(Func function, Mat image)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    function(image);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> duration = end - start;
+    return duration.count();
+}
+
 int main()
 {
-    Mat image = cv::imread("/src/input_imgs/sample_256x256.png");
+    Mat image = cv::imread("/src/input_imgs/goku.png");
     String output_path = "/src/realOutputMag.png";
 
     if (image.empty())
@@ -92,9 +103,13 @@ int main()
     }
 
     Mat grayImage = grayscale(image);
-    Mat edgeImage = sobelEdgeDetection(grayImage);
+    // Mat edgeImage = sobelEdgeDetection(grayImage);
+
+    double timeSeconds = timeFunction(sobelEdgeDetection, grayImage);
+    std::cout << timeSeconds << "\n";
+
     // Mat thresholdedImage = threshold(edgeImage, 90, 255);
 
-    cv::imwrite(output_path, edgeImage);
-    cout << "Image saved to '" << output_path << "'" << endl;
+    // cv::imwrite(output_path, edgeImage);
+    // cout << "Image saved to '" << output_path << "'" << endl;
 }

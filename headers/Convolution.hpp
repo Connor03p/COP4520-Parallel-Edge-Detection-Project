@@ -16,17 +16,19 @@ public:
      * @param image the input image that holds the pixels you want to grab
      * @param x the x index of the center pixel of some 3x3 you want to grab
      * @param y the y index of the center pixel of some 3x3 you want to grab
+     * @param threshold any value from the magnitude image greater than this value will be kept as an edge
      *
-     * @return THe magnitude of a single patch
+     * @return the final pixel value of a single patch after performing sobel
      */
-    int performSobelOnPatch(cv::Mat &image, int x, int y);
+    int performSobelOnPatch(cv::Mat &image, int x, int y, int threshold);
 
 private:
     /**
      * @brief Calculates the convolution of two flattened 3x3 matrices.
+     *        Assume the size of both vectors are 9.
      *
-     * @param vector1 The first flattened matrix.
-     * @param vector2 The second flattened matrix.
+     * @param vector1 The first flattened matrix of size 9.
+     * @param vector2 The second flattened matrix of size 9.
      * @return The result of the convolution operation.
      */
     int calcConvolution(std::vector<int> vector1, std::vector<int> vector2);

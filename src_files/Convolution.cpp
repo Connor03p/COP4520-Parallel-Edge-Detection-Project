@@ -2,19 +2,16 @@
 
 int Convolution::calcConvolution(std::vector<int> vector1, std::vector<int> vector2)
 {
+
     int convolution = 0;
-    int vector1Size = vector1.size();
-    int vector2Size = vector2.size();
 
-    if (vector1Size != vector2Size)
-    {
-        std::cout << "Can't convolve, vectors have different sizes" << std::endl;
-        return -1;
-    }
+    // I use vector pointers here for a speed up instead of using .at()
+    const int *vector1Ptr = vector1.data();
+    const int *vector2Ptr = vector2.data();
 
-    for (int i = 0; i < vector1Size; i++)
+    for (int i = 0; i < 9; i++)
     {
-        convolution += vector1.at(i) * vector2.at(i);
+        convolution += *(vector1Ptr++) * *(vector2Ptr++);
     }
 
     return convolution;
@@ -24,15 +21,6 @@ std::vector<uchar> Convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y
 {
     std::vector<uchar> retval;
     int i, j;
-
-    // this is to make sure that the indicies passed in are over the original image and not the add padding
-    // we cam still collect those values with the following algorithm, we just don't want to
-    // center the pixel anywhere in the padding.
-    // if (x < 1 || x > 256 || y < 1 || y > 256)
-    // {
-    //     std::cout << "X or Y index out of bounds of un padded image" << std::endl;
-    //     return retval;
-    // }
 
     // reserve space in memory for 9 values, faster than adding values only with push back
     retval.reserve(9);
@@ -62,25 +50,29 @@ std::vector<uchar> Convolution::formVectorOutOf3by3(cv::Mat &image, int x, int y
     return retval;
 }
 
-int Convolution::performSobelOnPatch(cv::Mat &image, int x, int y)
+int Convolution::performSobelOnPatch(cv::Mat &image, int x, int y, int threshold)
 {
     // this is called patch for consistent reasons, but values are contained within a vector
-    std::vector<uchar> patch;
-    int gxPatch, gyPatch, magnitudePatch, patchValueAfterThreshold;
+    std::vector<uchar> patchFromImage;
+    int gxPatchVal, gyPatchVal, magnitudePatchVal, patchValueAfterThreshold;
 
-    patch = formVectorOutOf3by3(image, x, y);
+    patchFromImage = formVectorOutOf3by3(image, x, y);
 
-    std::vector<int> patch_int(patch.begin(), patch.end());
+    // converts vector from uchar to int
+    std::vector<int> patch_int(patchFromImage.begin(), patchFromImage.end());
 
     // the change in x and y are also just the patches and not the entire gx and gy
-    gxPatch = calcConvolution(patch_int, Convolution::x_kernal_vector);
-    gyPatch = calcConvolution(patch_int, Convolution::y_kernal_vector);
+    gxPatchVal = calcConvolution(patch_int, Convolution::x_kernal_vector);
+    gyPatchVal = calcConvolution(patch_int, Convolution::y_kernal_vector);
 
     // now we find the patches magnitude
-    magnitudePatch = std::sqrt((gxPatch * gxPatch) + (gyPatch * gyPatch));
+    magnitudePatchVal = std::sqrt((gxPatchVal * gxPatchVal) + (gyPatchVal * gyPatchVal));
 
-    // TODO: should scale magnitude image before taking threshold
+    // sets the final value to and edge depending on it exceeding the threshold value
+    // TODO: Maybe implement auto thresholds
+    patchValueAfterThreshold = (magnitudePatchVal > threshold) ? 255 : 0;
+
     // ?Maybe do this in a wrapper function
 
-    return magnitudePatch;
+    return patchValueAfterThreshold;
 }

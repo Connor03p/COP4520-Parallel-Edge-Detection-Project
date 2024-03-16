@@ -5,9 +5,9 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/core.hpp>
 
-/*
- * localUtil will contain any usefull helper function that don't really
- * have a place in a sepearate class
+/**
+ * @brief localUtil will contain any useful helper function that don't really
+ *        have a place in a separate class
  */
 class localUtil
 {
