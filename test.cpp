@@ -103,12 +103,9 @@ int main()
     }
 
     Mat grayImage = grayscale(image);
-    // Mat edgeImage = sobelEdgeDetection(grayImage);
+    Mat edgeImage = sobelEdgeDetection(grayImage);
 
-    double timeSeconds = timeFunction(sobelEdgeDetection, grayImage);
-    std::cout << timeSeconds << "\n";
-
-    // Mat thresholdedImage = threshold(edgeImage, 90, 255);
+    Mat thresholdedImage = threshold(edgeImage, 90, 255);
 
     // cv::imwrite(output_path, edgeImage);
     // cout << "Image saved to '" << output_path << "'" << endl;

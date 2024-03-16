@@ -30,6 +30,8 @@ private:
      * @param vector1 The first flattened matrix of size 9.
      * @param vector2 The second flattened matrix of size 9.
      * @return The result of the convolution operation.
+     *
+     * @deprecated
      */
     int calcConvolution(std::vector<int> vector1, std::vector<int> vector2);
 
@@ -42,18 +44,30 @@ private:
      * @param x the x index of the center pixel of some 3x3 you want to grab
      * @param y the y index of the center pixel of some 3x3 you want to grab
      * @return The resulting 1D vector. If x || y are not in bounds of the un padded image then zero vector is returned
+     *
+     * @deprecated
      */
     std::vector<uchar> formVectorOutOf3by3(cv::Mat &image, int x, int y);
 
     /**
-     * Both kernals are pre flatten to vectors to save on computation
+     * Both kernals are pre flatten to arrays to save on computation
      * the vectors here are equivalent to their 3x3 matrix counter parts i.e.
      *
-     *   gx = -1  0  1    gy = 1  2  1
-     *        -2  0  2         0  0  0
-     *        -1  0  1        -1 -2 -1
+     *   gx = -1  0  1
+     *        -2  0  2
+     *        -1  0  1
      *
      */
-    const std::vector<int> x_kernal_vector{-1, 0, 1, -2, 0, 2, -1, 0, 1};
-    const std::vector<int> y_kernal_vector{1, 2, 1, 0, 0, 0, -1, -2, -1};
+    const int x_kernal_vector[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+
+    /**
+     * Both kernals are pre flatten to arrays to save on computation
+     * the vectors here are equivalent to their 3x3 matrix counter parts i.e.
+     *
+     *  gy = 1  2  1
+     *       0  0  0
+     *      -1 -2 -1
+     *
+     */
+    const int y_kernal_vector[9] = {1, 2, 1, 0, 0, 0, -1, -2, -1};
 };

@@ -5,20 +5,18 @@
 #include <opencv2/core/utility.hpp>
 #include <iostream>
 #include <fstream>
-#include <chrono>
 
 using namespace cv;
 
 // TODO: remove later, this was just for testing
 // Each thread will do an interation of this for loop
 // save this for reference later, won't be used in the final
-Mat testWrapper(Mat &image)
+cv::Mat testWrapper(Mat &image)
 {
     Convolution conv;
     Mat magnitude(image.rows, image.cols, CV_8UC1);
     int threshold = 95;
 
-    // TODO: figure out how to remove this border from magnitude
     // other then that, threads should be able to run this code individually and fill in magnitude
     // consider doing the threshold part as well within the cycle of a thread
     // the way i get indicies here anyway will change when multithreading since some things need
@@ -35,9 +33,8 @@ Mat testWrapper(Mat &image)
     return magnitude;
 }
 
-// Function to time the execution of another function
 template <typename Func>
-double timeFunction(Func function, Mat image)
+double timeFunction(Func function, cv::Mat image)
 {
     auto start = std::chrono::high_resolution_clock::now();
     function(image);
@@ -51,12 +48,12 @@ int main()
 {
     Mat image = localUtil::loadImageFromFile("goku.png", cv::ImreadModes::IMREAD_GRAYSCALE);
 
-    // Mat retval = testWrapper(image);
+    Mat retval = testWrapper(image);
 
-    double timeSeconds = timeFunction(testWrapper, image);
-    std::cout << timeSeconds << "\n";
+    // double timeSeconds = timeFunction(testWrapper, image);
+    // std::cout << timeSeconds << "\n";
 
-    // imshow("Image", retval);
+    imshow("Image", retval);
     waitKey(0); // wait for a keystroke in the window
 
     // TODO: implement counter class and thread class
