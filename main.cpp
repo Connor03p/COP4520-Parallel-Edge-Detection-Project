@@ -46,14 +46,13 @@ double timeFunction(Func function, cv::Mat image)
 
 int main()
 {
-    Mat image = localUtil::loadImageFromFile("goku.png", cv::ImreadModes::IMREAD_GRAYSCALE);
+
+    Mat image = localUtil::loadImageFromFile("dead.jpeg", cv::ImreadModes::IMREAD_GRAYSCALE);
 
     Mat retval = testWrapper(image);
 
-    // double timeSeconds = timeFunction(testWrapper, image);
-    // std::cout << timeSeconds << "\n";
-
-    imshow("Image", retval);
+    imwrite("/src/output_imgs/dead.png", retval);
+    // imshow("Image", retval);
     waitKey(0); // wait for a keystroke in the window
 
     // TODO: implement counter class and thread class
