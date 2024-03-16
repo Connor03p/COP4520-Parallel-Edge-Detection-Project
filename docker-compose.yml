@@ -11,9 +11,11 @@ services:
       - .:/src/
       # used for vscode settings persistant data
       - vscodeServerData:/.vscod-server
+      - vscodeLocalData:/src/.vscode # keeps the settings saved from the container
 
 # this will keep and vscode server data
 # i.e. extentions installed when turning off the container
 # this information is saved on the host machine in the docker system files
 volumes:
   vscodeServerData:
+  vscodeLocalData:
