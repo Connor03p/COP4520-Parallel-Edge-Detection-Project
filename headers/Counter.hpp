@@ -5,13 +5,15 @@ class Counter
 {
 
 public:
-    Counter();
+    Counter(int xBorder, int yBorder);
 
     /**
      * @brief increment the current patch index and return the next index
      * to be calculated
      */
-    int *getNextPatch();
+    void getCoordinates();
+    int *getIndex();
+    bool getIsFinished();
 
 private:
     /**
@@ -28,7 +30,8 @@ private:
      */
     int index[2];
 
-    int lastX;
-    int lastY;
-    std::mutex index_mutex;
+    int xBorder;
+    int yBorder;
+    bool isFinished;
+    std::mutex mutex;
 };

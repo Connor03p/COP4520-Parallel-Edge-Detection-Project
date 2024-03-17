@@ -35,26 +35,23 @@ using namespace cv;
 //     return magnitude;
 // }
 
-template <typename Func>
-double timeFunction(Func function, cv::Mat image)
-{
-    auto start = std::chrono::high_resolution_clock::now();
-    function(image);
-    auto end = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double> duration = end - start;
-    return duration.count();
-}
-
 int main()
 {
 
     Mat image = localUtil::loadImageFromFile("sample_256x256.png", cv::ImreadModes::IMREAD_GRAYSCALE);
-    MultithreadedSobel sobel(20);
+    MultithreadedSobel sobel(1, 90);
 
-    Mat m1 = sobel.performSobelEdgeDetection(image);
+    // TODO: this is used to time the function
+    auto start = std::chrono::high_resolution_clock::now();
+    Mat result = sobel.performSobelEdgeDetection(image);
+    auto end = std::chrono::high_resolution_clock::now();
 
-    imwrite("/src/output_imgs/yooo.png", m1);
+    std::chrono::duration<double> duration = end - start;
+    double executionTime = duration.count();
+
+    std::cout << "Execution Time: " << executionTime << " seconds" << std::endl;
+
+    imwrite("/src/output_imgs/yooo.png", result);
     // imshow("Image", retval);
     waitKey(0); // wait for a keystroke in the window
 

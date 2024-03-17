@@ -6,19 +6,20 @@
 #include "localUtil.hpp"
 #include <thread>
 #include <vector>
+#include <mutex>
 
 class MultithreadedSobel
 {
 public:
-    MultithreadedSobel();
-    MultithreadedSobel(int numberOfThreads);
     MultithreadedSobel(int numberOfThreads, int threshold);
 
     cv::Mat performSobelEdgeDetection(cv::Mat &image);
 
+    int performSobelOnPatch(cv::Mat &image, int x, int y, int threshold);
+
 private:
-    Counter counter;
     int numberOfThreads;
     int threshold;
     cv::Mat inputImage;
+    std::mutex mutex;
 };
