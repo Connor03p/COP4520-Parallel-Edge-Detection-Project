@@ -24,6 +24,7 @@ public:
 
 private:
     /**
+     * @deprecated
      * @brief Calculates the convolution of two flattened 3x3 matrices.
      *        Assume the size of both vectors are 9.
      *
@@ -31,11 +32,12 @@ private:
      * @param vector2 The second flattened matrix of size 9.
      * @return The result of the convolution operation.
      *
-     * @deprecated
+     *
      */
     int calcConvolution(std::vector<int> vector1, std::vector<int> vector2);
 
     /**
+     * @deprecated
      * @brief Given an image and indicies, takes a 3x3 block and creates a vector out of said values
      * assumes image has already be padded ny zeros to avoid out of bounds errors
      *
@@ -45,7 +47,6 @@ private:
      * @param y the y index of the center pixel of some 3x3 you want to grab
      * @return The resulting 1D vector. If x || y are not in bounds of the un padded image then zero vector is returned
      *
-     * @deprecated
      */
     std::vector<uchar> formVectorOutOf3by3(cv::Mat &image, int x, int y);
 

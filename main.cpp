@@ -3,6 +3,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/utility.hpp>
+#include "headers/MultithreadedSobel.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -12,27 +13,27 @@ using namespace cv;
 // TODO: add multithreading to this tomorrow
 // Each thread will do an interation of this for loop
 // save this for reference later, won't be used in the final
-cv::Mat testWrapper(Mat &image)
-{
-    Convolution conv;
-    Mat magnitude(image.rows, image.cols, CV_8UC1);
-    int threshold = 95;
+// cv::Mat testWrapper(Mat &image)
+// {
+//     Convolution conv;
+//     Mat magnitude(image.rows, image.cols, CV_8UC1);
+//     int threshold = 95;
 
-    // other then that, threads should be able to run this code individually and fill in magnitude
-    // consider doing the threshold part as well within the cycle of a thread
-    // the way i get indicies here anyway will change when multithreading since some things need
-    // to be shared
+//     // other then that, threads should be able to run this code individually and fill in magnitude
+//     // consider doing the threshold part as well within the cycle of a thread
+//     // the way i get indicies here anyway will change when multithreading since some things need
+//     // to be shared
 
-    for (int i = 1; i < image.rows - 1; i++)
-    {
-        for (int j = 1; j < image.cols - 1; j++)
-        {
-            magnitude.at<uchar>(i, j) = conv.performSobelOnPatch(image, i, j, threshold);
-        }
-    }
+//     for (int i = 1; i < image.rows - 1; i++)
+//     {
+//         for (int j = 1; j < image.cols - 1; j++)
+//         {
+//             magnitude.at<uchar>(i, j) = conv.performSobelOnPatch(image, i, j, threshold);
+//         }
+//     }
 
-    return magnitude;
-}
+//     return magnitude;
+// }
 
 template <typename Func>
 double timeFunction(Func function, cv::Mat image)
@@ -48,11 +49,12 @@ double timeFunction(Func function, cv::Mat image)
 int main()
 {
 
-    Mat image = localUtil::loadImageFromFile("dead.jpeg", cv::ImreadModes::IMREAD_GRAYSCALE);
+    Mat image = localUtil::loadImageFromFile("sample_256x256.png", cv::ImreadModes::IMREAD_GRAYSCALE);
+    MultithreadedSobel sobel(20);
 
-    Mat retval = testWrapper(image);
+    Mat m1 = sobel.performSobelEdgeDetection(image);
 
-    imwrite("/src/output_imgs/dead.png", retval);
+    imwrite("/src/output_imgs/yooo.png", m1);
     // imshow("Image", retval);
     waitKey(0); // wait for a keystroke in the window
 

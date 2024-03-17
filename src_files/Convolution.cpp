@@ -32,6 +32,7 @@ int Convolution::performSobelOnPatch(cv::Mat &image, int x, int y, int threshold
 
     // sets the final value to and edge depending on it exceeding the threshold value
     // TODO: Maybe implement auto thresholds
+    // patchValueAfterThreshold is the pixel value that goes into the final image
     patchValueAfterThreshold = (magnitude > threshold) ? 255 : 0;
 
     // ?Maybe do this in a wrapper function
