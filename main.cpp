@@ -1,5 +1,4 @@
 #include "headers/localUtil.hpp"
-#include "headers/Convolution.hpp"
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/utility.hpp>
@@ -38,8 +37,8 @@ using namespace cv;
 int main()
 {
 
-    Mat image = localUtil::loadImageFromFile("sample_256x256.png", cv::ImreadModes::IMREAD_GRAYSCALE);
-    MultithreadedSobel sobel(1, 90);
+    Mat image = localUtil::loadImageFromFile("dbz.png", cv::ImreadModes::IMREAD_GRAYSCALE);
+    MultithreadedSobel sobel(5, 90);
 
     // TODO: this is used to time the function
     auto start = std::chrono::high_resolution_clock::now();

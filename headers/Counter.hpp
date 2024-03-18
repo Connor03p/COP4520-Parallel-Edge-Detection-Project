@@ -12,10 +12,9 @@ public:
      * to be calculated
      */
     void getCoordinates();
-    int *getIndex();
     bool getIsFinished();
 
-private:
+    // TODO: redo description
     /**
      * The x & y values will be the value each thread grabs to then go complete a
      * patch of work during the sobel process
@@ -28,8 +27,10 @@ private:
      * They will be in the following format
      *              [x,y]
      */
-    int index[2];
+    int x;
+    int y;
 
+private:
     int xBorder;
     int yBorder;
     bool isFinished;

@@ -20,6 +20,7 @@ int MultithreadedSobel::performSobelOnPatch(cv::Mat &image, int x, int y, int th
     int i, j, gx = 0, gy = 0, magnitude = 0, patchValueAfterThreshold = 0;
 
     i = j = -1;
+
     // Think of c a the indices of a 3x3 matrix, but in a sequential sense
     // first row start at 0, then 3, then 6
     for (int c = 0; c < 9; c++)
@@ -38,21 +39,17 @@ int MultithreadedSobel::performSobelOnPatch(cv::Mat &image, int x, int y, int th
 
         // TODO: print statement for debugging
         // std::cout << int(image.at<char>(x + i, y + j)) << " ";
-        this->mutex.lock();
         gx += int(image.at<uchar>(x + i, y + j)) * x_kernal_vector[c];
         gy += int(image.at<uchar>(x + i, y + j)) * y_kernal_vector[c];
         j++;
-        this->mutex.unlock();
     }
 
-    this->mutex.lock();
     magnitude = std::sqrt((gx * gx) + (gy * gy));
 
     // sets the final value to and edge depending on it exceeding the threshold value
     // TODO: Maybe implement auto thresholds
     // patchValueAfterThreshold is the pixel value that goes into the final image
     patchValueAfterThreshold = (magnitude > threshold) ? 255 : 0;
-    this->mutex.unlock();
 
     // ?Maybe do this in a wrapper function
 
@@ -60,42 +57,43 @@ int MultithreadedSobel::performSobelOnPatch(cv::Mat &image, int x, int y, int th
 }
 
 // TODO: WIP STILL NEED TO ADD COUNTER CLASS AND OTHER THINGS
+
 cv::Mat MultithreadedSobel::performSobelEdgeDetection(cv::Mat &image)
 {
-
     int imageRows = image.rows;
     int imageCols = image.cols;
     int thresh = this->threshold;
+    int numberOfThreads = this->numberOfThreads;
+    int result = 0;
 
     cv::Mat final(imageRows, imageCols, CV_8UC1);
     Counter counter(imageRows - 1, imageCols - 1);
     std::vector<std::thread> threads;
 
-    // TODO: still need to get indicies here properly
-    // TODO need to use std::ref when passing cv::Mat !!!!!
-
-    for (int i = 0; i < this->numberOfThreads; i++)
+    // Define a lambda function to be executed by each thread
+    // Create multiple threads and execute the lambda function in parallel
+    auto performSobel = [this, &final, &image, &thresh, &counter, &result]()
     {
-        threads.push_back(std::thread([this, &final, &image, &thresh, &counter]()
-                                      {
-                                        int result = 0;
-                                        int index[2];
-                                        while (!counter.getIsFinished())
-                                        {
-                                            index[0] = counter.getIndex()[0];
-                                            index[1] = counter.getIndex()[1];
-                                            result = performSobelOnPatch(image, index[0], index[1], thresh);
-                                            final.at<uchar>(index[0], index[1]) = uchar(result);
-                                            counter.getCoordinates();
-                                        } }));
+        while (!counter.getIsFinished())
+        {
+            mutex.lock();
+            result = performSobelOnPatch(image, counter.x, counter.y, thresh);
+            final.at<uchar>(counter.x, counter.y) = uchar(result);
+            counter.getCoordinates();
+            mutex.unlock();
+        }
+    };
+
+    for (int i = 0; i < numberOfThreads; i++)
+    {
+        threads.push_back(std::thread(performSobel));
     }
 
-    for (int j = 0; j < this->numberOfThreads; j++)
+    // Wait for all threads to finish
+    for (int j = 0; j < numberOfThreads; j++)
     {
         threads.at(j).join();
     }
-
-    // localUtil::writeImageToTxt(final, "yoooo");
 
     return final;
 }
