@@ -3,13 +3,20 @@ cmake_minimum_required(VERSION 3.1)
 
 # Define project name
 project(opencv_example_project)
-
-set(CMAKE_GXX_FLAGS "-Wall -Wextra -Wconversion  -pedantic -std=c++20")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_GXX_FLAGS "-Wall -Wextra -Wconversion  -pedantic")
 
 # Find OpenCV, you may need to set OpenCV_DIR variable
 # to the absolute path to the directory containing OpenCVConfig.cmake file
 # via the command line or GUI
 find_package(OpenCV REQUIRED)
+
+find_package(OpenMP)
+if(OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}" )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}" )
+endif()
 
 # If the package has been found, several variables will
 # be set, you can find the full list with descriptions

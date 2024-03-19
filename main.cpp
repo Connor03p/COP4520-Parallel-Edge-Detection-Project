@@ -12,20 +12,26 @@ using namespace cv;
 int main()
 {
 
-    Mat image = localUtil::loadImageFromFile("sample.png", cv::ImreadModes::IMREAD_GRAYSCALE);
-    MultithreadedSobel_V2 sobel(1, 90);
-
+    Mat image = localUtil::loadImageFromFile("house.jpg", cv::ImreadModes::IMREAD_GRAYSCALE);
+    MultithreadedSobel_V2 sobel(4, 90);
+    Mat result;
     // TODO: this is used to time the function
-    auto start = std::chrono::high_resolution_clock::now();
-    Mat result = sobel.performSobelEdgeDetection(image);
-    auto end = std::chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double> duration = end - start;
-    double executionTime = duration.count();
+    for (int test = 0; test < 10; test++)
+    {
 
-    std::cout << "Execution Time: " << executionTime << " seconds" << std::endl;
+        auto start = std::chrono::high_resolution_clock::now();
+        result = sobel.performSobelEdgeDetection(image);
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> duration = end - start;
+        double executionTime = duration.count();
+
+        std::cout << "Execution Time: " << executionTime << " seconds" << std::endl;
+    }
 
     imwrite("/src/output_imgs/yooo.png", result);
+    localUtil::writeImageToTxt(result, "yooo");
     // imshow("Image", retval);
     waitKey(0); // wait for a keystroke in the window
 

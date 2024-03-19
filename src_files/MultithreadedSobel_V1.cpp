@@ -39,8 +39,16 @@ int MultithreadedSobel_V1::performSobelOnPatch(cv::Mat &image, int x, int y, int
 
         // TODO: print statement for debugging
         // std::cout << int(image.at<char>(x + i, y + j)) << " ";
-        gx += int(image.at<uchar>(x + i, y + j)) * x_kernal_vector[c];
-        gy += int(image.at<uchar>(x + i, y + j)) * y_kernal_vector[c];
+        if (x + i >= 0 && x + i < image.rows && y + j >= 0 && y + j < image.cols)
+        {
+            gx += int(image.at<uchar>(x + i, y + j)) * x_kernal_vector[c];
+            gy += int(image.at<uchar>(x + i, y + j)) * y_kernal_vector[c];
+        }
+        else
+        {
+            gx += 0;
+            gy += 0;
+        }
         j++;
     }
 
