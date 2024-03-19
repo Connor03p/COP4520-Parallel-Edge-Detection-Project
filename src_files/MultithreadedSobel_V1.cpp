@@ -1,18 +1,18 @@
-#include "/src/headers/MultithreadedSobel.hpp"
+#include "/src/headers/MultithreadedSobel_V1.hpp"
 #include <fstream>
 
 const int x_kernal_vector[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
 
 const int y_kernal_vector[9] = {1, 2, 1, 0, 0, 0, -1, -2, -1};
 
-MultithreadedSobel::MultithreadedSobel(int numberOfThreads, int threshold)
+MultithreadedSobel_V1::MultithreadedSobel_V1(int numberOfThreads, int threshold)
 {
     this->numberOfThreads = numberOfThreads;
     this->threshold = threshold;
 }
 
 // TODO: moved this here may get rid of it in the other class as its not needed
-int MultithreadedSobel::performSobelOnPatch(cv::Mat &image, int x, int y, int threshold)
+int MultithreadedSobel_V1::performSobelOnPatch(cv::Mat &image, int x, int y, int threshold)
 {
 
     // std::cout << "x " << x << "y: " << y << std::endl;
@@ -58,7 +58,7 @@ int MultithreadedSobel::performSobelOnPatch(cv::Mat &image, int x, int y, int th
 
 // TODO: WIP STILL NEED TO ADD COUNTER CLASS AND OTHER THINGS
 
-cv::Mat MultithreadedSobel::performSobelEdgeDetection(cv::Mat &image)
+cv::Mat MultithreadedSobel_V1::performSobelEdgeDetection(cv::Mat &image)
 {
     int imageRows = image.rows;
     int imageCols = image.cols;

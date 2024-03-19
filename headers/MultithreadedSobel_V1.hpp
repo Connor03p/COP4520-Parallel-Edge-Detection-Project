@@ -7,10 +7,10 @@
 #include <vector>
 #include <mutex>
 
-class MultithreadedSobel
+class MultithreadedSobel_V1
 {
 public:
-    MultithreadedSobel(int numberOfThreads, int threshold);
+    MultithreadedSobel_V1(int numberOfThreads, int threshold);
     cv::Mat performSobelEdgeDetection(cv::Mat &image);
 
     /**

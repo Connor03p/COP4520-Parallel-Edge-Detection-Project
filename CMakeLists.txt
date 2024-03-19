@@ -25,7 +25,7 @@ include_directories(headers)
 include_directories(src_files)
 
 # Declare the executable target built from your sources
-add_executable(opencv_test main.cpp src_files/localUtil.cpp src_files/Counter.cpp src_files/MultithreadedSobel.cpp)
+add_executable(opencv_test main.cpp src_files/localUtil.cpp src_files/Counter.cpp src_files/MultithreadedSobel_V1.cpp src_files/MultithreadedSobel_V2.cpp)
 
 
 # Link your application with OpenCV libraries
