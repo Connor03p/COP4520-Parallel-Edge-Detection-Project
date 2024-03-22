@@ -44,7 +44,7 @@ class Timer
 
 Mat grayscale(const Mat &image)
 {
-    Timer timer("Grayscale");
+    Timer timer(" Grayscale");
 
     int numRows = image.rows;
     int numCols = image.cols;
@@ -66,7 +66,7 @@ Mat grayscale(const Mat &image)
 // Multithreaded Grayscale
 Mat grayscale_mt(const Mat &image, int numThreads = 4)
 {
-    Timer timer("Grayscale_mt");
+    Timer timer(" Grayscale (" + std::to_string(numThreads) + " threads)");
 
     int numRows = image.rows;
     int numCols = image.cols;
@@ -107,7 +107,7 @@ Mat grayscale_mt(const Mat &image, int numThreads = 4)
 
 Mat gaussianBlur(const Mat &image)
 {
-    Timer timer("Blur");
+    Timer timer(" Blur");
 
     int numRows = image.rows;
     int numCols = image.cols;
@@ -137,7 +137,7 @@ Mat gaussianBlur(const Mat &image)
 
 Mat gaussianBlur_mt(const Mat &image, int numThreads = 4)
 {
-    Timer timer("Blur_mt");
+    Timer timer(" Blur (" + std::to_string(numThreads) + " threads)");
 
     int numRows = image.rows;
     int numCols = image.cols;
@@ -186,7 +186,7 @@ Mat gaussianBlur_mt(const Mat &image, int numThreads = 4)
 
 Mat sobelEdgeDetection(const Mat &image)
 {
-    Timer timer("Sobel");
+    Timer timer(" Sobel");
     int numRows = image.rows;
     int numCols = image.cols;
     Mat edgeImage = Mat::zeros(numRows, numCols, CV_8UC1);
@@ -219,7 +219,7 @@ Mat sobelEdgeDetection(const Mat &image)
 
 Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
 {
-    Timer timer("Sobel_mt");
+    Timer timer(" Sobel (" + std::to_string(numThreads) + " threads)");
     int numRows = image.rows;
     int numCols = image.cols;
     Mat verticalGradient = Mat::zeros(numRows, numCols, CV_32SC1);
@@ -305,7 +305,7 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
 
 Mat threshold(const Mat &image, int minValue, int maxValue)
 {
-    Timer timer("Threshold");
+    Timer timer(" Threshold");
     int numRows = image.rows;
     int numCols = image.cols;
     Mat thresholdedImage = Mat::zeros(numRows, numCols, CV_8UC1);
@@ -324,7 +324,7 @@ Mat threshold(const Mat &image, int minValue, int maxValue)
 
 Mat threshold_mt(const Mat &image, int minValue, int maxValue, int numThreads = 4)
 {
-    Timer timer("Threshold_mt");
+    Timer timer(" Threshold (" + std::to_string(numThreads) + " threads)");
     int numRows = image.rows;
     int numCols = image.cols;
     Mat thresholdedImage = Mat::zeros(numRows, numCols, CV_8UC1);
@@ -361,15 +361,21 @@ Mat threshold_mt(const Mat &image, int minValue, int maxValue, int numThreads = 
 
 int main()
 {
-    Mat image = cv::imread("/src/sample2.png");
+    String input_path = "/src/sample2.png";
     String output1_path = "/src/output1.png";
     String output2_path = "/src/output2.png";
 
+    Mat image = cv::imread(input_path);
     if (image.empty())
     {
         cout << "Failed to load image" << endl;
         return 1;
     }
+
+    cout << endl << "Loaded '" << input_path << "'" << endl;
+    cout << " Width: " << image.cols << endl;
+    cout << " Height: " << image.rows << endl;
+    
 
     cout << endl << "Performing single-threaded edge detection:" << endl;
     Timer timer("Total time");
@@ -377,18 +383,18 @@ int main()
     Mat blurredImage = gaussianBlur(grayImage);
     Mat edgeImage = sobelEdgeDetection(blurredImage);
     Mat thresholdedImage = threshold(edgeImage, 90, 255);
-    cv::imwrite(output1_path, thresholdedImage);
     timer.timerEnd();
+    cv::imwrite(output1_path, thresholdedImage);
     cout << "Image saved to '" << output1_path << "'" << endl;
 
     cout << endl << "Performing multi-threaded edge detection:" << endl;
     Timer timer2("Total time");
     Mat grayImage_mt = grayscale_mt(image, 4);
-    Mat blurredImage_mt = gaussianBlur_mt(grayImage_mt);
-    Mat edgeImage_mt = sobelEdgeDetection_mt(blurredImage_mt);
+    Mat blurredImage_mt = gaussianBlur_mt(grayImage_mt, 4);
+    Mat edgeImage_mt = sobelEdgeDetection_mt(blurredImage_mt, 4);
     Mat thresholdedImage_mt = threshold_mt(edgeImage_mt, 90, 255, 4);    
-    cv::imwrite(output2_path, thresholdedImage_mt);
     timer2.timerEnd();
+    cv::imwrite(output2_path, thresholdedImage_mt);
     cout << "Image saved to '" << output2_path << "'" << endl << endl;
 
     return 0;
