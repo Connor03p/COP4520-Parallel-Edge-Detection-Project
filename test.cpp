@@ -217,6 +217,92 @@ Mat sobelEdgeDetection(const Mat &image)
     return edgeImage;
 }
 
+Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
+{
+    Timer timer("Sobel_mt");
+    int numRows = image.rows;
+    int numCols = image.cols;
+    Mat verticalGradient = Mat::zeros(numRows, numCols, CV_32SC1);
+    Mat horizontalGradient = Mat::zeros(numRows, numCols, CV_32SC1);
+    Mat edgeImage = Mat::zeros(numRows, numCols, CV_8UC1);
+
+    // Create threads
+    std::vector<std::thread> threads;
+    int threadRows = numRows / numThreads;
+    
+    // Thread to calculate the vertical gradient
+    for (int i = 0; i < numThreads; ++i)
+    {
+        threads.push_back(std::thread([=, &image, &verticalGradient]() {
+            int startRow = i * threadRows;
+            int endRow = startRow + threadRows;
+
+            for (int j = startRow; j < endRow; ++j)
+            {
+                for (int k = 1; k < numCols - 1; ++k)
+                {
+                    int sum = 0;
+
+                    for (int l = -1; l <= 1; ++l)
+                    {
+                        for (int m = -1; m <= 1; ++m)
+                        {
+                            sum += image.at<uchar>(j + l, k + m) * y_kernal[l + 1][m + 1];
+                        }
+                    }
+
+                    verticalGradient.at<int>(j, k) = sum;
+                }
+            }
+        }));
+    }
+
+    // Threads to calculate the horizontal gradient
+    for (int i = 0; i < numThreads; ++i)
+    {
+        threads.push_back(std::thread([=, &image, &horizontalGradient]() {
+            int startRow = i * threadRows;
+            int endRow = startRow + threadRows;
+
+            for (int j = startRow; j < endRow; ++j)
+            {
+                for (int k = 1; k < numCols - 1; ++k)
+                {
+                    int sum = 0;
+
+                    for (int l = -1; l <= 1; ++l)
+                    {
+                        for (int m = -1; m <= 1; ++m)
+                        {
+                            sum += image.at<uchar>(j + l, k + m) * x_kernal[l + 1][m + 1];
+                        }
+                    }
+
+                    horizontalGradient.at<int>(j, k) = sum;
+                }
+            }
+        }));
+    }
+
+    // Join threads
+    for (thread &t : threads)
+    {
+        t.join();
+    }
+
+    // Calculate gradient magnitude
+    for (int i = 1; i < numRows - 1; ++i)
+    {
+        for (int j = 1; j < numCols - 1; ++j)
+        {
+            edgeImage.at<uchar>(i, j) = std::sqrt(verticalGradient.at<int>(i, j) * verticalGradient.at<int>(i, j) + horizontalGradient.at<int>(i, j) * horizontalGradient.at<int>(i, j));
+        }
+    }
+
+    timer.timerEnd();
+    return edgeImage;
+}
+
 Mat threshold(const Mat &image, int minValue, int maxValue)
 {
     Timer timer("Threshold");
@@ -299,7 +385,7 @@ int main()
     Timer timer2("Total time");
     Mat grayImage_mt = grayscale_mt(image, 4);
     Mat blurredImage_mt = gaussianBlur_mt(grayImage_mt);
-    Mat edgeImage_mt = sobelEdgeDetection(blurredImage_mt);
+    Mat edgeImage_mt = sobelEdgeDetection_mt(blurredImage_mt);
     Mat thresholdedImage_mt = threshold_mt(edgeImage_mt, 90, 255, 4);    
     cv::imwrite(output2_path, thresholdedImage_mt);
     timer2.timerEnd();
