@@ -80,7 +80,7 @@ Mat grayscale_mt(const Mat &image, int numThreads = 4)
     {
         threads.push_back(std::thread([=, &image, &grayImage]() {
             int startRow = i * threadRows;
-            int endRow = (i == numThreads - 1) ? numRows : startRow + threadRows;
+            int endRow = startRow + threadRows;
 
             for (int j = startRow; j < endRow; ++j)
             {
@@ -129,6 +129,54 @@ Mat gaussianBlur(const Mat &image)
 
             blurredImage.at<uchar>(i, j) = sum / 9;
         }
+    }
+
+    timer.timerEnd();
+    return blurredImage;
+}
+
+Mat gaussianBlur_mt(const Mat &image, int numThreads = 4)
+{
+    Timer timer("Blur_mt");
+
+    int numRows = image.rows;
+    int numCols = image.cols;
+    Mat blurredImage = Mat::zeros(numRows, numCols, CV_8UC1);
+
+    // Create threads
+    std::vector<std::thread> threads;
+    int threadRows = numRows / numThreads;
+
+    for (int i = 0; i < numThreads; ++i)
+    {
+        threads.push_back(std::thread([=, &image, &blurredImage]() {
+            int startRow = i * threadRows;
+            int endRow = startRow + threadRows;
+
+            for (int j = startRow; j < endRow; ++j)
+            {
+                for (int k = 1; k < numCols - 1; ++k)
+                {
+                    int sum = 0;
+
+                    for (int l = -1; l <= 1; ++l)
+                    {
+                        for (int m = -1; m <= 1; ++m)
+                        {
+                            sum += image.at<uchar>(j + l, k + m);
+                        }
+                    }
+
+                    blurredImage.at<uchar>(j, k) = sum / 9;
+                }
+            }
+        }));
+    }
+
+    // Join threads
+    for (thread &t : threads)
+    {
+        t.join();
     }
 
     timer.timerEnd();
@@ -203,7 +251,7 @@ Mat threshold_mt(const Mat &image, int minValue, int maxValue, int numThreads = 
     {
         threads.push_back(std::thread([=, &image, &thresholdedImage]() {
             int startRow = i * threadRows;
-            int endRow = (i == numThreads - 1) ? numRows : startRow + threadRows;
+            int endRow = startRow + threadRows;
 
             for (int j = startRow; j < endRow; ++j)
             {
@@ -238,19 +286,23 @@ int main()
     }
 
     cout << endl << "Performing single-threaded edge detection:" << endl;
+    Timer timer("Total time");
     Mat grayImage = grayscale(image);
     Mat blurredImage = gaussianBlur(grayImage);
     Mat edgeImage = sobelEdgeDetection(blurredImage);
     Mat thresholdedImage = threshold(edgeImage, 90, 255);
     cv::imwrite(output1_path, thresholdedImage);
+    timer.timerEnd();
     cout << "Image saved to '" << output1_path << "'" << endl;
 
     cout << endl << "Performing multi-threaded edge detection:" << endl;
+    Timer timer2("Total time");
     Mat grayImage_mt = grayscale_mt(image, 4);
-    Mat blurredImage_mt = gaussianBlur(grayImage_mt);
+    Mat blurredImage_mt = gaussianBlur_mt(grayImage_mt);
     Mat edgeImage_mt = sobelEdgeDetection(blurredImage_mt);
     Mat thresholdedImage_mt = threshold_mt(edgeImage_mt, 90, 255, 4);    
     cv::imwrite(output2_path, thresholdedImage_mt);
+    timer2.timerEnd();
     cout << "Image saved to '" << output2_path << "'" << endl << endl;
 
     return 0;
