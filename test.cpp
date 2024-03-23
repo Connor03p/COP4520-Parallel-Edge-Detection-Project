@@ -48,7 +48,7 @@ Mat grayscale(const Mat &image)
 
     int numRows = image.rows;
     int numCols = image.cols;
-    Mat grayImage = Mat::zeros(numRows, numCols, CV_8UC1);
+    Mat grayImage = Mat_<uchar>::zeros(numRows, numCols);
 
     for (int i = 0; i < numRows; ++i)
     {
@@ -70,7 +70,7 @@ Mat grayscale_mt(const Mat &image, int numThreads = 4)
 
     int numRows = image.rows;
     int numCols = image.cols;
-    Mat grayImage = Mat::zeros(numRows, numCols, CV_8UC1);
+    Mat grayImage = Mat_<uchar>::zeros(numRows, numCols);
 
     // Create threads
     std::vector<std::thread> threads;
@@ -111,7 +111,7 @@ Mat gaussianBlur(const Mat &image)
 
     int numRows = image.rows;
     int numCols = image.cols;
-    Mat blurredImage = Mat::zeros(numRows, numCols, CV_8UC1);
+    Mat blurredImage = Mat_<uchar>::zeros(numRows, numCols);
 
     for (int i = 1; i < numRows - 1; ++i)
     {
@@ -141,7 +141,7 @@ Mat gaussianBlur_mt(const Mat &image, int numThreads = 4)
 
     int numRows = image.rows;
     int numCols = image.cols;
-    Mat blurredImage = Mat::zeros(numRows, numCols, CV_8UC1);
+    Mat blurredImage = Mat_<uchar>::zeros(numRows, numCols);
 
     // Create threads
     std::vector<std::thread> threads;
@@ -189,7 +189,7 @@ Mat sobelEdgeDetection(const Mat &image)
     Timer timer(" Sobel");
     int numRows = image.rows;
     int numCols = image.cols;
-    Mat edgeImage = Mat::zeros(numRows, numCols, CV_8UC1);
+    Mat edgeImage = Mat_<uchar>::zeros(numRows, numCols);
 
     // Apply Sobel operator to each pixel in the image
     for (int i = 1; i < numRows - 1; ++i)
@@ -222,9 +222,9 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
     Timer timer(" Sobel (" + std::to_string(numThreads) + " threads)");
     int numRows = image.rows;
     int numCols = image.cols;
-    Mat verticalGradient = Mat::zeros(numRows, numCols, CV_32SC1);
-    Mat horizontalGradient = Mat::zeros(numRows, numCols, CV_32SC1);
-    Mat edgeImage = Mat::zeros(numRows, numCols, CV_8UC1);
+    Mat verticalGradient = Mat_<int>::zeros(numRows, numCols);
+    Mat horizontalGradient = Mat_<int>::zeros(numRows, numCols);
+    Mat edgeImage = Mat_<uchar>::zeros(numRows, numCols);
 
     // Create threads
     std::vector<std::thread> threads;
@@ -289,15 +289,31 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
     {
         t.join();
     }
+    threads.clear();
 
-    // Calculate gradient magnitude
-    for (int i = 1; i < numRows - 1; ++i)
+    // Threads to calculate gradient magnitude
+    for (int i = 0; i < numThreads; ++i)
     {
-        for (int j = 1; j < numCols - 1; ++j)
-        {
-            edgeImage.at<uchar>(i, j) = std::sqrt(verticalGradient.at<int>(i, j) * verticalGradient.at<int>(i, j) + horizontalGradient.at<int>(i, j) * horizontalGradient.at<int>(i, j));
-        }
+        threads.push_back(std::thread([=, &edgeImage, &verticalGradient, &horizontalGradient]() {
+            int startRow = i * threadRows;
+            int endRow = startRow + threadRows;
+
+            for (int j = startRow; j < endRow; ++j)
+            {
+                for (int k = 1; k < numCols - 1; ++k)
+                {
+                    edgeImage.at<uchar>(j, k) = std::sqrt(verticalGradient.at<int>(j, k) * verticalGradient.at<int>(j, k) + horizontalGradient.at<int>(j, k) * horizontalGradient.at<int>(j, k));
+                }
+            }
+        }));
     }
+
+    // Join threads
+    for (thread &t : threads)
+    {
+        t.join();
+    }
+    
 
     timer.timerEnd();
     return edgeImage;
@@ -308,7 +324,7 @@ Mat threshold(const Mat &image, int minValue, int maxValue)
     Timer timer(" Threshold");
     int numRows = image.rows;
     int numCols = image.cols;
-    Mat thresholdedImage = Mat::zeros(numRows, numCols, CV_8UC1);
+    Mat thresholdedImage = Mat_<uchar>::zeros(numRows, numCols);
 
     for (int i = 0; i < numRows; ++i)
     {
@@ -327,7 +343,7 @@ Mat threshold_mt(const Mat &image, int minValue, int maxValue, int numThreads = 
     Timer timer(" Threshold (" + std::to_string(numThreads) + " threads)");
     int numRows = image.rows;
     int numCols = image.cols;
-    Mat thresholdedImage = Mat::zeros(numRows, numCols, CV_8UC1);
+    Mat thresholdedImage = Mat_<uchar>::zeros(numRows, numCols);
 
     // Create threads
     std::vector<std::thread> threads;
