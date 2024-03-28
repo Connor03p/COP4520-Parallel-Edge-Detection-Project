@@ -13,33 +13,33 @@ int x_kernal[3][3] = {{-1, 0, 1},
                       {-2, 0, 2},
                       {-1, 0, 1}};
 
-int y_kernal[3][3] = {{1, 2, 1}, 
-                      {0, 0, 0}, 
+int y_kernal[3][3] = {{1, 2, 1},
+                      {0, 0, 0},
                       {-1, -2, -1}};
 
 // Timer
 class Timer
 {
-    public:
-        std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
-        std::string name;
+public:
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+    std::string name;
 
-        Timer(string name = "Timer") : name(name)
-        {
-            start = std::chrono::high_resolution_clock::now();
-        }
+    Timer(string name = "Timer") : name(name)
+    {
+        start = std::chrono::high_resolution_clock::now();
+    }
 
-        void timerStart()
-        {
-            start = std::chrono::high_resolution_clock::now();
-        }
+    void timerStart()
+    {
+        start = std::chrono::high_resolution_clock::now();
+    }
 
-        void timerEnd()
-        {
-            end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            std::cout << name << ": " << elapsed.count() << " s\n";
-        }
+    void timerEnd()
+    {
+        end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        std::cout << name << ": " << elapsed.count() << " s\n";
+    }
 };
 
 Mat grayscale(const Mat &image)
@@ -78,7 +78,8 @@ Mat grayscale_mt(const Mat &image, int numThreads = 4)
 
     for (int i = 0; i < numThreads; ++i)
     {
-        threads.push_back(std::thread([=, &image, &grayImage]() {
+        threads.push_back(std::thread([=, &image, &grayImage]()
+        {
             int startRow = i * threadRows;
             int endRow = startRow + threadRows;
 
@@ -89,7 +90,7 @@ Mat grayscale_mt(const Mat &image, int numThreads = 4)
                     Vec3b intensity = image.at<Vec3b>(j, k);
                     grayImage.at<uchar>(j, k) = 0.299 * intensity.val[2] + 0.587 * intensity.val[1] + 0.114 * intensity.val[0];
                 }
-            }
+            } 
         }));
     }
 
@@ -104,8 +105,40 @@ Mat grayscale_mt(const Mat &image, int numThreads = 4)
     return grayImage;
 }
 
+double gaussian(int x, int y, double sigma)
+{
+    return exp(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * M_PI * sigma * sigma);
+}
 
-Mat gaussianBlur(const Mat &image)
+// Function to generate a Gaussian kernel for blurring
+vector<vector<double>> guassianKernel(int size, double sigma)
+{
+    vector<vector<double>> kernel(size, vector<double>(size));
+    int center = size / 2;
+
+    double total = 0.0;
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = 0; j < size; ++j)
+        {
+            kernel[i][j] = gaussian(i - center, j - center, sigma);
+            total += kernel[i][j];
+        }
+    }
+
+    // Normalize the kernel
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = 0; j < size; ++j)
+        {
+            kernel[i][j] /= total;
+        }
+    }
+
+    return kernel;
+}
+
+Mat gaussianBlur(const Mat &image, int blurSize = 5, double sigma = 1)
 {
     Timer timer(" Blur");
 
@@ -113,21 +146,24 @@ Mat gaussianBlur(const Mat &image)
     int numCols = image.cols;
     Mat blurredImage = Mat_<uchar>::zeros(numRows, numCols);
 
-    for (int i = 1; i < numRows - 1; ++i)
-    {
-        for (int j = 1; j < numCols - 1; ++j)
-        {
-            int sum = 0;
+    // Create the kernel
+    vector<vector<double>> kernel = guassianKernel(blurSize, sigma);
 
-            for (int k = -1; k <= 1; ++k)
+    // Apply the kernel to the image
+    int halfBlurSize = blurSize / 2;
+    for (int y = halfBlurSize; y < image.rows - halfBlurSize; ++y)
+    {
+        for (int x = halfBlurSize; x < image.cols - halfBlurSize; ++x)
+        {
+            double sum = 0.0;
+            for (int ky = -halfBlurSize; ky <= halfBlurSize; ++ky)
             {
-                for (int l = -1; l <= 1; ++l)
+                for (int kx = -halfBlurSize; kx <= halfBlurSize; ++kx)
                 {
-                    sum += image.at<uchar>(i + k, j + l);
+                    sum += kernel[ky + halfBlurSize][kx + halfBlurSize] * image.at<uchar>(y + ky, x + kx);
                 }
             }
-
-            blurredImage.at<uchar>(i, j) = sum / 9;
+            blurredImage.at<uchar>(y, x) = sum;
         }
     }
 
@@ -135,7 +171,7 @@ Mat gaussianBlur(const Mat &image)
     return blurredImage;
 }
 
-Mat gaussianBlur_mt(const Mat &image, int numThreads = 4)
+Mat gaussianBlur_mt(const Mat &image, int blurSize = 5, double sigma = 1, int numThreads = 4)
 {
     Timer timer(" Blur (" + std::to_string(numThreads) + " threads)");
 
@@ -143,31 +179,35 @@ Mat gaussianBlur_mt(const Mat &image, int numThreads = 4)
     int numCols = image.cols;
     Mat blurredImage = Mat_<uchar>::zeros(numRows, numCols);
 
+    // Create the kernel
+    vector<vector<double>> kernel = guassianKernel(blurSize, sigma);
+
     // Create threads
     std::vector<std::thread> threads;
     int threadRows = numRows / numThreads;
 
     for (int i = 0; i < numThreads; ++i)
     {
-        threads.push_back(std::thread([=, &image, &blurredImage]() {
+        threads.push_back(std::thread([=, &image, &blurredImage]()
+        {
             int startRow = i * threadRows;
             int endRow = startRow + threadRows;
 
-            for (int j = startRow; j < endRow; ++j)
+            // Apply the kernel to the image
+            int halfBlurSize = blurSize / 2;
+            for (int y = startRow; y < endRow; ++y)
             {
-                for (int k = 1; k < numCols - 1; ++k)
+                for (int x = halfBlurSize; x < image.cols - halfBlurSize; ++x)
                 {
-                    int sum = 0;
-
-                    for (int l = -1; l <= 1; ++l)
+                    double sum = 0.0;
+                    for (int ky = -halfBlurSize; ky <= halfBlurSize; ++ky)
                     {
-                        for (int m = -1; m <= 1; ++m)
+                        for (int kx = -halfBlurSize; kx <= halfBlurSize; ++kx)
                         {
-                            sum += image.at<uchar>(j + l, k + m);
+                            sum += kernel[ky + halfBlurSize][kx + halfBlurSize] * image.at<uchar>(y + ky, x + kx);
                         }
                     }
-
-                    blurredImage.at<uchar>(j, k) = sum / 9;
+                    blurredImage.at<uchar>(y, x) = sum;
                 }
             }
         }));
@@ -182,7 +222,6 @@ Mat gaussianBlur_mt(const Mat &image, int numThreads = 4)
     timer.timerEnd();
     return blurredImage;
 }
-
 
 Mat sobelEdgeDetection(const Mat &image)
 {
@@ -229,11 +268,12 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
     // Create threads
     std::vector<std::thread> threads;
     int threadRows = numRows / numThreads;
-    
+
     // Thread to calculate the vertical gradient
     for (int i = 0; i < numThreads; ++i)
     {
-        threads.push_back(std::thread([=, &image, &verticalGradient]() {
+        threads.push_back(std::thread([=, &image, &verticalGradient]()
+        {
             int startRow = i * threadRows;
             int endRow = startRow + threadRows;
 
@@ -253,14 +293,15 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
 
                     verticalGradient.at<int>(j, k) = sum;
                 }
-            }
+            } 
         }));
     }
 
     // Threads to calculate the horizontal gradient
     for (int i = 0; i < numThreads; ++i)
     {
-        threads.push_back(std::thread([=, &image, &horizontalGradient]() {
+        threads.push_back(std::thread([=, &image, &horizontalGradient]()
+        {
             int startRow = i * threadRows;
             int endRow = startRow + threadRows;
 
@@ -280,7 +321,7 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
 
                     horizontalGradient.at<int>(j, k) = sum;
                 }
-            }
+            } 
         }));
     }
 
@@ -294,7 +335,8 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
     // Threads to calculate gradient magnitude
     for (int i = 0; i < numThreads; ++i)
     {
-        threads.push_back(std::thread([=, &edgeImage, &verticalGradient, &horizontalGradient]() {
+        threads.push_back(std::thread([=, &edgeImage, &verticalGradient, &horizontalGradient]()
+                                      {
             int startRow = i * threadRows;
             int endRow = startRow + threadRows;
 
@@ -304,8 +346,7 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
                 {
                     edgeImage.at<uchar>(j, k) = std::sqrt(verticalGradient.at<int>(j, k) * verticalGradient.at<int>(j, k) + horizontalGradient.at<int>(j, k) * horizontalGradient.at<int>(j, k));
                 }
-            }
-        }));
+            } }));
     }
 
     // Join threads
@@ -313,7 +354,6 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
     {
         t.join();
     }
-    
 
     timer.timerEnd();
     return edgeImage;
@@ -351,7 +391,8 @@ Mat threshold_mt(const Mat &image, int minValue, int maxValue, int numThreads = 
 
     for (int i = 0; i < numThreads; ++i)
     {
-        threads.push_back(std::thread([=, &image, &thresholdedImage]() {
+        threads.push_back(std::thread([=, &image, &thresholdedImage]()
+                                      {
             int startRow = i * threadRows;
             int endRow = startRow + threadRows;
 
@@ -361,8 +402,7 @@ Mat threshold_mt(const Mat &image, int minValue, int maxValue, int numThreads = 
                 {
                     thresholdedImage.at<uchar>(j, k) = (image.at<uchar>(j, k) > minValue) ? 255 : 0;
                 }
-            }
-        }));
+            } }));
     }
 
     // Join threads
@@ -391,14 +431,13 @@ int main()
     cout << endl << "Loaded '" << input_path << "'" << endl;
     cout << " Width: " << image.cols << endl;
     cout << " Height: " << image.rows << endl;
-    
 
     cout << endl << "Performing single-threaded edge detection:" << endl;
     Timer timer("Total time");
     Mat grayImage = grayscale(image);
-    Mat blurredImage = gaussianBlur(grayImage);
+    Mat blurredImage = gaussianBlur(grayImage, 15, 5);
     Mat edgeImage = sobelEdgeDetection(blurredImage);
-    Mat thresholdedImage = threshold(edgeImage, 90, 255);
+    Mat thresholdedImage = threshold(edgeImage, 25, 255);
     timer.timerEnd();
     cv::imwrite(output1_path, thresholdedImage);
     cout << "Image saved to '" << output1_path << "'" << endl;
@@ -406,9 +445,9 @@ int main()
     cout << endl << "Performing multi-threaded edge detection:" << endl;
     Timer timer2("Total time");
     Mat grayImage_mt = grayscale_mt(image, 4);
-    Mat blurredImage_mt = gaussianBlur_mt(grayImage_mt, 4);
+    Mat blurredImage_mt = gaussianBlur_mt(grayImage_mt, 15, 5, 8);
     Mat edgeImage_mt = sobelEdgeDetection_mt(blurredImage_mt, 4);
-    Mat thresholdedImage_mt = threshold_mt(edgeImage_mt, 90, 255, 4);    
+    Mat thresholdedImage_mt = threshold_mt(edgeImage_mt, 25, 255, 4);
     timer2.timerEnd();
     cv::imwrite(output2_path, thresholdedImage_mt);
     cout << "Image saved to '" << output2_path << "'" << endl << endl;
