@@ -2,6 +2,8 @@
 #include <fstream>
 #include <omp.h>
 
+// Array forms of the 3x3 x and y kernal
+// makes doing math easier in this format
 const int x_kernal_vector[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
 
 const int y_kernal_vector[9] = {1, 2, 1, 0, 0, 0, -1, -2, -1};
@@ -63,8 +65,6 @@ int MultithreadedSobel_V2::performSobelOnPatch(cv::Mat &image, int x, int y, int
     // patchValueAfterThreshold is the pixel value that goes into the final image
     patchValueAfterThreshold = (magnitude > threshold) ? 255 : 0;
 
-    // ?Maybe do this in a wrapper function
-
     return patchValueAfterThreshold;
 }
 
@@ -77,18 +77,32 @@ cv::Mat MultithreadedSobel_V2::performSobelEdgeDetection(cv::Mat &image)
     cv::Mat retval(imageRows, imageCols, CV_8UC1);
 
     std::vector<std::thread> threads;
-    threads.reserve(imageCols);
+    threads.reserve(this->numberOfThreads);
 
+    // loop until all columns have been completed
     for (int colNum = imageCols - 1; colNum >= 0; colNum--)
     {
+
+        // for each column create a thread and run the sobel operation for all pixels in that column
         threads.emplace_back([this, &imageRows, &image, &retval, colNum]()
                              {
             for (int i = 0; i < imageRows; i++)
             {
                 retval.at<uchar>(i, colNum) = performSobelOnPatch(image, i, colNum, this->threshold);
             } });
+
+        // this limits the amount of threads to whats passed in to the constructor
+        if (threads.size() >= this->numberOfThreads)
+        {
+            for (auto &thread : threads)
+            {
+                thread.join();
+            }
+            threads.clear();
+        }
     }
 
+    // finally join the remaining threads before returning the final image
     for (auto &thread : threads)
     {
         thread.join();

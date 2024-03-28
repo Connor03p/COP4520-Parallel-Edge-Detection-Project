@@ -11,9 +11,11 @@ using namespace cv;
 
 int main()
 {
+    std::string filename = "sample1.png";
+    std::string path = "/src/output_imgs/" + filename;
 
-    Mat image = localUtil::loadImageFromFile("house.jpg", cv::ImreadModes::IMREAD_GRAYSCALE);
-    MultithreadedSobel_V2 sobel(4, 90);
+    Mat image = localUtil::loadImageFromFile(filename, cv::ImreadModes::IMREAD_GRAYSCALE);
+    MultithreadedSobel_V2 sobel(1, 90);
     Mat result;
     // TODO: this is used to time the function
 
@@ -30,8 +32,8 @@ int main()
         std::cout << "Execution Time: " << executionTime << " seconds" << std::endl;
     }
 
-    imwrite("/src/output_imgs/yooo.png", result);
-    localUtil::writeImageToTxt(result, "yooo");
+    imwrite(path, result);
+    // localUtil::writeImageToTxt(result, "mountain");
     // imshow("Image", retval);
     waitKey(0); // wait for a keystroke in the window
 
