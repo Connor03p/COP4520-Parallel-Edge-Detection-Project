@@ -31,5 +31,4 @@ public:
 private:
     int numberOfThreads;
     int threshold;
-    cv::Mat inputImage;
 };
