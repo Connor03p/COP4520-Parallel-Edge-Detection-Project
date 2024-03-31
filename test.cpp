@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 #include <thread>
+#include <condition_variable>
+#include <mutex>
 #include "headers/convolution.hpp"
 
 using namespace cv;
@@ -34,11 +36,13 @@ public:
         start = std::chrono::high_resolution_clock::now();
     }
 
-    void timerEnd()
+    void timerEnd(bool print = true)
     {
         end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = end - start;
-        std::cout << name << ": " << elapsed.count() << " s\n";
+
+        if (print)
+            std::cout << name << ": " << elapsed.count() << " s\n";
     }
 };
 
@@ -191,6 +195,7 @@ Mat gaussianBlur_mt(const Mat &image, int blurSize = 5, double sigma = 1, int nu
         threads.push_back(std::thread([=, &image, &blurredImage]()
         {
             int startRow = i * threadRows;
+            if (startRow == 0) startRow = 1;
             int endRow = startRow + threadRows;
 
             // Apply the kernel to the image
@@ -272,10 +277,12 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
     // Thread to calculate the vertical gradient
     for (int i = 0; i < numThreads; ++i)
     {
-        threads.push_back(std::thread([=, &image, &verticalGradient]()
+        threads.push_back(thread([=, &image, &verticalGradient]()
         {
             int startRow = i * threadRows;
+            if (startRow == 0) startRow = 1;
             int endRow = startRow + threadRows;
+            if (endRow >= numRows) endRow = numRows - 1;
 
             for (int j = startRow; j < endRow; ++j)
             {
@@ -303,7 +310,9 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
         threads.push_back(std::thread([=, &image, &horizontalGradient]()
         {
             int startRow = i * threadRows;
+            if (startRow == 0) startRow = 1;
             int endRow = startRow + threadRows;
+            if (endRow >= numRows) endRow = numRows - 1;
 
             for (int j = startRow; j < endRow; ++j)
             {
@@ -336,9 +345,11 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
     for (int i = 0; i < numThreads; ++i)
     {
         threads.push_back(std::thread([=, &edgeImage, &verticalGradient, &horizontalGradient]()
-                                      {
+        {
             int startRow = i * threadRows;
+            if (startRow == 0) startRow = 1;
             int endRow = startRow + threadRows;
+            if (endRow >= numRows) endRow = numRows - 1;
 
             for (int j = startRow; j < endRow; ++j)
             {
@@ -346,7 +357,8 @@ Mat sobelEdgeDetection_mt(const Mat &image, int numThreads = 4)
                 {
                     edgeImage.at<uchar>(j, k) = std::sqrt(verticalGradient.at<int>(j, k) * verticalGradient.at<int>(j, k) + horizontalGradient.at<int>(j, k) * horizontalGradient.at<int>(j, k));
                 }
-            } }));
+            } 
+        }));
     }
 
     // Join threads
@@ -392,8 +404,9 @@ Mat threshold_mt(const Mat &image, int minValue, int maxValue, int numThreads = 
     for (int i = 0; i < numThreads; ++i)
     {
         threads.push_back(std::thread([=, &image, &thresholdedImage]()
-                                      {
+        {
             int startRow = i * threadRows;
+            if (startRow == 0) startRow = 1;
             int endRow = startRow + threadRows;
 
             for (int j = startRow; j < endRow; ++j)
@@ -402,7 +415,8 @@ Mat threshold_mt(const Mat &image, int minValue, int maxValue, int numThreads = 
                 {
                     thresholdedImage.at<uchar>(j, k) = (image.at<uchar>(j, k) > minValue) ? 255 : 0;
                 }
-            } }));
+            } 
+        }));
     }
 
     // Join threads
@@ -432,25 +446,45 @@ int main()
     cout << " Width: " << image.cols << endl;
     cout << " Height: " << image.rows << endl;
 
+/*
     cout << endl << "Performing single-threaded edge detection:" << endl;
     Timer timer("Total time");
-    Mat grayImage = grayscale(image);
-    Mat blurredImage = gaussianBlur(grayImage, 15, 5);
-    Mat edgeImage = sobelEdgeDetection(blurredImage);
-    Mat thresholdedImage = threshold(edgeImage, 25, 255);
+    //Mat grayImage = grayscale(image);
+    //Mat blurredImage = gaussianBlur(grayImage, 3, 1);
+    Mat edgeImage = sobelEdgeDetection(image);
+    //Mat thresholdedImage = threshold(edgeImage, 25, 255);
     timer.timerEnd();
-    cv::imwrite(output1_path, thresholdedImage);
+    cv::imwrite(output1_path, edgeImage);
     cout << "Image saved to '" << output1_path << "'" << endl;
 
     cout << endl << "Performing multi-threaded edge detection:" << endl;
     Timer timer2("Total time");
-    Mat grayImage_mt = grayscale_mt(image, 4);
-    Mat blurredImage_mt = gaussianBlur_mt(grayImage_mt, 15, 5, 8);
-    Mat edgeImage_mt = sobelEdgeDetection_mt(blurredImage_mt, 4);
-    Mat thresholdedImage_mt = threshold_mt(edgeImage_mt, 25, 255, 4);
+    //Mat grayImage_mt = grayscale_mt(image, 4);
+    //Mat blurredImage_mt = gaussianBlur_mt(grayImage_mt, 3, 1, 8);
+    Mat edgeImage_mt = sobelEdgeDetection_mt(image, 4);
+    //Mat thresholdedImage_mt = threshold_mt(edgeImage_mt, 25, 255, 4);
     timer2.timerEnd();
-    cv::imwrite(output2_path, thresholdedImage_mt);
+    cv::imwrite(output2_path, edgeImage_mt);
     cout << "Image saved to '" << output2_path << "'" << endl << endl;
+*/
+    int timesToRun = 25;
+    array<double, 4> threadCounts = {1, 2, 4, 8};
+
+    for (int i = 0; i < threadCounts.size(); ++i)
+    {
+        cout << "Running with " << threadCounts[i] << " threads:" << endl;
+        Timer timer("Total time");
+        for (int j = 0; j < timesToRun; ++j)
+        {
+            Mat edgeImage = sobelEdgeDetection_mt(image, threadCounts[i]);
+        }
+        timer.timerEnd(false);
+        // Calculate average time
+        std::chrono::duration<double> avgTime = timer.end - timer.start;
+        avgTime /= timesToRun;
+        cout << "Average time: " << avgTime.count() << " s" << endl << endl;
+    }
+    
 
     return 0;
 }
