@@ -90,7 +90,7 @@ void testNormalSobel()
 int main()
 {
 
-    std::string filename = "sample3.png";
+    // std::string filename = "sample3.png";
     std::vector<std::string> photos{"sample1.png", "sample2.png", "sample3.png"};
 
     for (std::string filename : photos)
@@ -99,14 +99,15 @@ int main()
         int threshold = 130;
         std::string path = "/src/output_imgs/" + filename;
         Mat image = localUtil::loadImageFromFile(filename, cv::ImreadModes::IMREAD_GRAYSCALE);
-        MultithreadedSobel_V2 sobel(numThreads, threshold);
         Mat result;
-        int numTest = 15;
+        int numTest = 25;
         double avgTime = 0;
         // TODO: this is used to time the function
 
         for (; numThreads <= 8;)
         {
+            MultithreadedSobel_V1 sobel(numThreads, threshold);
+
             for (int test = 0; test < numTest; test++)
             {
                 auto start = std::chrono::high_resolution_clock::now();
@@ -118,7 +119,7 @@ int main()
                 avgTime += executionTime;
             }
 
-            std::cout << "METHOD B" << std::endl;
+            std::cout << "METHOD A" << std::endl;
             std::cout << "Result size: " << result.size() << std::endl;
             std::cout << "Number Of Test: " << numTest << std::endl;
             std::cout << "Threshold value: " << threshold << std::endl;
@@ -129,6 +130,7 @@ int main()
 
             imwrite(path, result);
             numThreads *= 2;
+            avgTime = 0;
         }
 
         std::cout << "\n"
